@@ -4,15 +4,21 @@
 
 #include "CrossFunc.h"
 #include "Symbols.h"
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+
+#ifdef HL_DISP
+  #include <Adafruit_GFX.h>
+  #include <Adafruit_SSD1306.h>
+
+  // I2C OLED display
+  Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);
+#endif
 
 // WiFi
 
 // WiFi settings
 wiFiConfig wiFiSettings {
-  "SSID", 
-  "Passphrase", 
+  (char*)"SSID",
+  (char*)"Passphrase",
   4
 };
 
@@ -23,10 +29,10 @@ WiFiClient client;                      // This throttle's WiFi client
 
 // WiThrottle server settings
 hostConfig hostSettings {
-  "0.0.0.0",
+  (char*)"0.0.0.0",
   12090,
   2,
-  "",
+  (char*)"",
   0
 };
 
@@ -58,7 +64,7 @@ String readCmd() {
     #ifdef DEBUG
       if (command != "\r\n\r\n" && command != "") {
         tmpCommand = command.substring(0, command.length() - 4);
-        tmpCommand.replace("\r\n\r\n", "\r\n\<--: ");
+        tmpCommand.replace("\r\n\r\n", "\r\n<--: ");
         Serial.println("<--: " + tmpCommand);
       }
     #endif
@@ -66,7 +72,3 @@ String readCmd() {
 
   return command; 
 }
-
-
-// I2C OLED display
-Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, OLED_RESET);

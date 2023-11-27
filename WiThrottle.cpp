@@ -3,13 +3,11 @@
  */
 
 #include "WiThrottle.h"
-#include <Adafruit_SSD1306.h>
-#include <Adafruit_GFX.h>
+
 #include <ctype.h>
 #include <EEPROM.h>
-#include <TimeLib.h>
+#include <TimeLib.h>  // https://github.com/PaulStoffregen/Time
 #include <WiFi.h>
-#include <Wire.h>
 
 
 // WiFi communication
@@ -19,13 +17,18 @@ extern WiFiClient client;                   // This throttle's WiFi client
 extern unsigned long lastHeartbeat;         // Timestamp of last heartbeat sent to WiThrottle server
 
 
-// I2C OLED display
-extern Adafruit_SSD1306 display;
-extern unsigned char imgBootSequence56x32[];
-extern unsigned char imgExlamation16x16[];
-extern unsigned char imgJMRI16x16[];
-extern unsigned char imgWiFi16x16[];
+#ifdef HL_DISP
+	#include <Wire.h>
+	#include <Adafruit_SSD1306.h>
+  #include <Adafruit_GFX.h>
 
+	// I2C OLED display
+  extern Adafruit_SSD1306 display;
+  extern unsigned char imgBootSequence56x32[];
+  extern unsigned char imgExlamation16x16[];
+  extern unsigned char imgJMRI16x16[];
+  extern unsigned char imgWiFi16x16[];
+#endif
 
 // Constructor
 WiThrottle::WiThrottle(char* name) {
@@ -133,11 +136,11 @@ void WiThrottle::connectToWiFi(wiFiConfig &wiFiSettings) {
     #else
       // Wait to keep LED state readable
       delay(500);
+		#endif
 
-      digitalWrite(LED_STOP, HIGH);
-      digitalWrite(LED_FWD, HIGH);
-      digitalWrite(LED_REV, HIGH);
-    #endif
+    digitalWrite(LED_STOP, HIGH);
+    digitalWrite(LED_FWD, HIGH);
+    digitalWrite(LED_REV, HIGH);
   }
 }
 
@@ -149,11 +152,10 @@ void WiThrottle::disconnectFromWiFi() {
     // Hide WiFi symbol
     display.drawBitmap(OLED_WIFI_X, OLED_AREA_1_Y, imgWiFi16x16, 16, 16, OLED_COLOR_BLACK);
     display.display();
-  #else
-    digitalWrite(LED_STOP, HIGH);
-    digitalWrite(LED_FWD, HIGH);
-    digitalWrite(LED_REV, HIGH);
   #endif
+  digitalWrite(LED_STOP, HIGH);
+  digitalWrite(LED_FWD, HIGH);
+  digitalWrite(LED_REV, HIGH);
 
   // Wait to keep display or led statereadable
   delay(500);
@@ -226,11 +228,10 @@ void WiThrottle::connectToJMRI(hostConfig &hostSettings) {
         // Show JMRI symbol
         display.drawBitmap(OLED_JMRI_X, OLED_AREA_1_Y, imgJMRI16x16, 16, 16, OLED_COLOR_WHITE);
         display.display();
-      #else
-        digitalWrite(LED_STOP, LOW);
-        digitalWrite(LED_FWD, HIGH);
-        digitalWrite(LED_REV, HIGH);
-      #endif
+			#endif
+			digitalWrite(LED_STOP, LOW);
+      digitalWrite(LED_FWD, HIGH);
+      digitalWrite(LED_REV, HIGH);
     }
   }
 
@@ -255,11 +256,10 @@ void WiThrottle::disconnectFromJMRI() {
     // Hide JMRI symbol
     display.drawBitmap(OLED_JMRI_X, OLED_AREA_1_Y, imgJMRI16x16, 16, 16, OLED_COLOR_BLACK);
     display.display();
-  #else
-    digitalWrite(LED_STOP, LOW);
-    digitalWrite(LED_FWD, HIGH);
-    digitalWrite(LED_REV, HIGH);
   #endif
+  digitalWrite(LED_STOP, LOW);
+  digitalWrite(LED_FWD, HIGH);
+  digitalWrite(LED_REV, HIGH);
 
   // Wait to keep display or led statereadable
   delay(500);
@@ -344,7 +344,7 @@ void WiThrottle::listenToServer() {
       }
       else if (cmdItem.startsWith("PR")) {
         // Route list
-        cmdItem = cmdItem.substring(cmdItem.indexOf(']\[') + 1, cmdItem.length());
+        cmdItem = cmdItem.substring(cmdItem.indexOf("]\[") + 1, cmdItem.length());
         lists.route = cmdItem;
 
         #ifdef DEBUG
@@ -359,7 +359,7 @@ void WiThrottle::listenToServer() {
       }
       else if (cmdItem.startsWith("PT")) {
         // Turnout list
-        cmdItem = cmdItem.substring(cmdItem.indexOf(']\[') + 1, cmdItem.length());
+        cmdItem = cmdItem.substring(cmdItem.indexOf("]\[") + 1, cmdItem.length());
         lists.turnout = cmdItem;
 
         #ifdef DEBUG
@@ -383,7 +383,7 @@ void WiThrottle::listenToServer() {
       else if (cmdItem.startsWith("RC")) {
         // Consist list
         cmdItem.replace("RCC0", "");
-        cmdItem = cmdItem.substring(cmdItem.indexOf(']\[') + 1, cmdItem.length());
+        cmdItem = cmdItem.substring(cmdItem.indexOf("]\[") + 1, cmdItem.length());
         lists.consist = cmdItem;
 
         #ifdef DEBUG
@@ -399,7 +399,7 @@ void WiThrottle::listenToServer() {
       else if (cmdItem.startsWith("RL")) {
         // Roster list
         cmdItem.replace("RL0", "");
-        cmdItem = cmdItem.substring(cmdItem.indexOf(']\[') + 1, cmdItem.length());
+        cmdItem = cmdItem.substring(cmdItem.indexOf("]\[") + 1, cmdItem.length());
         lists.roster = cmdItem;
 
         #ifdef DEBUG
@@ -554,11 +554,12 @@ unsigned int WiThrottle::getAddressByMenu() {
 //  display.print("0");
 //  display.print("0");
 //  display.display();
+  return 0;
 }
 
 // Get a DCC address by serial monitor
 unsigned int WiThrottle::getAddressBySerial() {
-  unsigned int address;                     // DCC address of loco
+  unsigned int address (0);                 // DCC address of loco
   String addressInput;                      // Input read from serial monitor
   bool isValidAddress = true;               // True if input is a valid DCC address
   unsigned long startTime;                  // Start time emergency stop button has been pressed
@@ -643,11 +644,11 @@ void WiThrottle::switchDCCPowerOff() {
 
 // Updates fast clock
 void WiThrottle::fastClockUpdate() {
-  unsigned long timeStampAct;               // Actual timestamp for fast clock
-  unsigned int x = (OLED_HEIGHT - (5 * 6)) / 2 + 2;
-                                            // x-position of fast clock on display
-
   #ifdef HL_DISP
+    unsigned long timeStampAct;               // Actual timestamp for fast clock
+    unsigned int x = (OLED_HEIGHT - (5 * 6)) / 2 + 2;
+    // x-position of fast clock on display
+
     timeStampAct = fastClockSettings.timeStamp + (long)((millis() - fastClockSettings.timeStampMillis) * fastClockSettings.ratio / 1000);
     if (hour(timeStampAct) != hour(timeStampFC) || minute(timeStampAct) != minute(timeStampFC)) {
       display.setTextColor(OLED_COLOR_BLACK);
@@ -713,7 +714,6 @@ void WiThrottle::errorHandling(String errorMsg) {
    */
 
   unsigned long startTime = millis();       // Time when errorHandling begins
-  unsigned int imgColor = OLED_COLOR_BLACK; // Color of symbol
   bool ledState = LOW;                      // Status of emergency stop LED
 
   #ifdef DEBUG
@@ -721,6 +721,8 @@ void WiThrottle::errorHandling(String errorMsg) {
   #endif
 
   #ifdef HL_DISP
+    unsigned int imgColor = OLED_COLOR_BLACK; // Color of symbol
+    
     // Write error message on display
     display.clearDisplay();
     display.setCursor(0, 30);

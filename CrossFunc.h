@@ -13,6 +13,8 @@
 
 // Define hardware layout
 //#define HL_DISP                             // If defined hardware uses display setup
+//#define ROT_ENCODER                         // If defined hardware uses rotary encoder instead of poti
+//#define FCT_WITH_I2C                        // If defined hardware uses pcf8574 instead of direct connection of F-Buttons
 
 // Software
 #define SW_RELEASE_YEAR  2020               // Software release year
@@ -28,18 +30,18 @@
  * GPIO  2 --> ADC2 pin, don't use when using WiFi!
  * GPIO  3 --> RX --> must be HIGH during boot --> (Input)
  * GPIO  4 --> ADC2 pin, don't use when using WiFi!
- * GPIO  5 --> Input/Output --> must be HIGH during boot
+ * GPIO  5 --> Input/Output --> must be HIGH during boot (SCK)
  * GPIO 12 --> ADC2 pin, don't use when using WiFi!
  * GPIO 13 --> ADC2 pin, don't use when using WiFi!
  * GPIO 14 --> ADC2 pin, don't use when using WiFi!
  * GPIO 15 --> Input/Output --> must be LOW during boot
  * GPIO 16 --> Input/Output
  * GPIO 17 --> Input/Output
- * GPIO 18 --> Input/Output
- * GPIO 19 --> Input/Output
- * GPIO 21 --> SDA
+ * GPIO 18 --> Input/Output (MOSI)
+ * GPIO 19 --> Input/Output (MISO)
+ * GPIO 21 --> Input/Output
  * GPIO 22 --> SCL
- * GPIO 23 --> Input/Output
+ * GPIO 23 --> SDA
  * GPIO 25 --> ADC2 pin, don't use when using WiFi!
  * GPIO 26 --> ADC2 pin, don't use when using WiFi!
  * GPIO 27 --> ADC2 pin, don't use when using WiFi!
@@ -70,7 +72,7 @@
 #define BTN_FCT_06         33               // Function button # 6 --> set to 0, if not used in hardware setup
 #define BTN_FCT_07          0               // Function button # 7 --> set to 0, if not used in hardware setup
 #define BTN_FCT_08          0               // Function button # 8 --> set to 0, if not used in hardware setup
-#define BTN_FCT_09          0               // Function button # 8 --> set to 0, if not used in hardware setup
+#define BTN_FCT_09          0               // Function button # 9 --> set to 0, if not used in hardware setup
 
 // Direction switch (tri state)
 #define DIR_SW             16               // Direction switch
@@ -78,19 +80,22 @@
 // Rotary potentiometer
 #define POT_SIG            36               // Variable output of potentiometer for speed control
 
+// VBatt
+#define V_BATT						  0
+
 // LED
 #define LED_STOP            5               // Emergency stop LED
 #define LED_FWD            21               // Forward LED
 #define LED_REV            22               // Reverse LED
 
 // Rotary encoder
-#define ENC_CLK            39               // Clock line from rotary encoder CLK
-#define ENC_DT             34               // Data line from rotary encoder DT
-#define ENC_BTN            35               // Switch from rotary encoder SW
+#define ENC_CLK            34               // Clock line from rotary encoder CLK
+#define ENC_DT             39               // Data line from rotary encoder DT
+#define ENC_BTN            15               // Switch from rotary encoder SW
 #define ENC_PWR            -1               // VCC pin # (-1 = powered separately)
 
 // I2C OLED display
-#define OLED_SDA           21               // Data line for I2C OLED display SDA
+#define OLED_SDA           23               // Data line for I2C OLED display SDA
 #define OLED_SCL           22               // Clock line for I2C OLED display SCL
 #define OLED_RESET         -1               // Reset pin # (-1 = sharing Arduino reset pin)
 
@@ -98,11 +103,11 @@
 #define OLED_I2C         0x3c               // I2C address
                                             /*
                                              * Display:
-                                             * ┌──────────────┐
+                                             * ┌────────────────────────┐
                                              * │No. of locos, JMRI, WiFi│ --> OLED_AREA_1
-                                             * ├──────────────┤
+                                             * ├────────────────────────┤
                                              * │Direction and fast clock│ --> OLED_AREA_2
-                                             * ├──────────────┤
+                                             * ├────────────────────────┤
                                              * │Other information       │ --> OLED_AREA_3
                                              * │                        │
                                              * │                        │
@@ -111,7 +116,7 @@
                                              * │                        │
                                              * │                        │
                                              * │                        │
-                                             * └──────────────┘
+                                             * └────────────────────────┘
                                              */
 #define OLED_HEIGHT        64               // I2C OLED display height in pixels
 #define OLED_WIDTH        128               // I2C display width in pixels

@@ -3,15 +3,17 @@
  */
 
 #include "VirtualLoco.h"
-#include <Adafruit_SSD1306.h>
-#include <Adafruit_GFX.h>
 #include <EEPROM.h>
 
+#ifdef HL_DISP
+  #include <Adafruit_SSD1306.h>
+  #include <Adafruit_GFX.h>
 
-// I2C OLED display
-extern Adafruit_SSD1306 display;
-extern unsigned char imgOne16x16[];
-extern unsigned char imgOneInverted16x16[];
+  // I2C OLED display
+  extern Adafruit_SSD1306 display;
+  extern unsigned char imgOne16x16[];
+  extern unsigned char imgOneInverted16x16[];
+#endif
 
 
 // Constructor
@@ -91,8 +93,8 @@ void VirtualLoco::select(unsigned int address, bool updateID) {
 
 // Select loco by ID
 void VirtualLoco::select(String id, String &rosterList) {
-  char* tmpRosterList =  "";                // Roster list
-  String tmpRosterItem = "";                // Roster item
+  char* tmpRosterList = (char*)"";          // Roster list
+  String tmpRosterItem = (char*)"";         // Roster item
   const char* rosterItemDelim = "]\\[";     // Delimiter betweed each roster item
   const char* rosterItemInfoDelim = "}|{";  // Delimiter betweed each roster item
   String tmpID = "";                        // ID of roster item

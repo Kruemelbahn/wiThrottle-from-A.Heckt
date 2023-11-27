@@ -35,8 +35,8 @@ void DccFunction::toggle() {
     Serial.println("Toggle function F" + String(fn) + ".");
   #endif
 
-  state != state;
-  sendCmd(cmdPrefix + "<;>F" + ON + fn);
+  state = !state;
+  sendCmd(cmdPrefix + "<;>F" + state + fn);	// ZIM: ON changed to state???
 }
 
 // Change state to On

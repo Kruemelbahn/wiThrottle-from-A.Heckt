@@ -1,0 +1,38 @@
+Ausgangspunkt: Artikel "Drahtlos statt Loconet" von Andreas Heckt in "Digitale Modellbahn 3/2020 S50ff."
+
+Hardwareänderungen/ergänzungen (wiFredI (AHeckt)):
+Boardauswahl: Adafruit ESP32 Feather (115200Bd im Terminal)
+Board verwendet: ESP32 ThingPlus V2.0 (Sparkfun)
+2020-08-15
+-> Platine v0.9.0 erstellt und verwendet
+
+Softwareanpassungen (wiFredI (AHeckt)):
+2020-08-15 = Softwareversion "0.90"
+Bugfixes:
+- GPIO-Beschreibung in CrossFunc.h korrigiert:
+  "GPIO 21 --> Input/Output" und "GPIO 23 --> SDA"
+- btnFctPin[] in ESP32_WiThrottle.ino: um ein weiteres Element (Konstante '0') ergänzt, beendet die Schleifen-Abfrage auf jeden Fall
+  "unsigned int btnFctPin[] = { BTN_FCT_01, BTN_FCT_02, BTN_FCT_03, BTN_FCT_04, BTN_FCT_05, BTN_FCT_06, BTN_FCT_07, BTN_FCT_08, BTN_FCT_09, 0 };"
+- void DccFunction::toggle() in DccFunction.cpp: 
+  aus  "sendCmd(cmdPrefix + "<;>F" + ON + fn);"
+  wird "sendCmd(cmdPrefix + "<;>F" + state + fn);"
+Changes/Additional:
+- Anpassung der Anschlusszuordnungen in CrossFunc.h: 
+   - im Kommentar
+	 - und in den #DEFINES gemäß der geänderten Kommentare
+- LED_STOP, LED_FWD und LED_REV werden immer angesteuert, unabhängig von einem Display
+- #define ROT_ENCODER: Trennen der Encoder-Funktionalität vom einem Display.
+  So kann 
+   - entweder das Poti mit zusätzlichem Richtungsumschalter
+	 - oder der Encoder verwendet werden
+- Vorbereitete #defines:
+  - Möglichkeit zum Anschluss der Tasten über I²C mittels PCF8574:
+    + #define FCT_WITH_I2C: Einlesen und Auswerten der Funktionstasten über die Bibliothek "PCF8754"
+  - Möglichkeit zur Messung der LiPo-Spannung:
+    + #define V_BATT: ist der Wert ungleich Null, wird die LiPo-Spanung überprüft
+
+2021-05-08 = Softwareversion "0.90"
+Board: ESP32 Espressif Systems V1.0.6
+Bibliotheken installiert, zugehörige Links in ESP32_WiThrottle.ino und WiThrottle.cpp hinzugefügt
+Bugfixes:
+- Compiler-Warnings und Errors beseitigt

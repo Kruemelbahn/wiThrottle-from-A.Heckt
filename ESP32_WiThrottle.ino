@@ -33,14 +33,17 @@
  * [4]: https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
  */
 
+/*
+ * modifications by Michael Zimmermann
+ */
+
+// original compiliert mit https://github.com/espressif/arduino-esp32@V1.0.6
+//   auch compilierbar mit https://github.com/espressif/arduino-esp32@V2.0.9 (04.05.2023)
+ 
 #include "CrossFunc.h"
 #include "VirtualLoco.h"
 #include "WiThrottle.h"
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-#include <AiEsp32RotaryEncoder.h>
 #include <Arduino.h>
-#include <MedianFilter.h>
 
 
 // WiFi settings
@@ -50,24 +53,34 @@ extern wiFiConfig wiFiSettings;
 extern hostConfig hostSettings;
 
 // WiThrottle
-WiThrottle throttle("ESP32 WiThrottle");
+WiThrottle throttle((char*)"ESP32 WiThrottle");
 
-// I2C OLED display
-extern Adafruit_SSD1306 display;
-extern unsigned char imgFWD7x7[];
-extern unsigned char imgREV7x7[];
+#ifdef HL_DISP
+	#include <Adafruit_GFX.h>
+	#include <Adafruit_SSD1306.h>
+	
+	// I2C OLED display
+  extern Adafruit_SSD1306 display;
+  extern unsigned char imgFWD7x7[];
+  extern unsigned char imgREV7x7[];
+#endif
 
-// Rotary encoder
-AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ENC_CLK, ENC_DT, ENC_BTN, ENC_PWR);
+#ifdef ROT_ENCODER
+  // Rotary encoder
+	#include <AiEsp32RotaryEncoder.h>   // https://github.com/igorantolic/ai-esp32-rotary-encoder
+	AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ENC_CLK, ENC_DT, ENC_BTN, ENC_PWR);
+#else
+	#include <MedianFilter.h>   // https://github.com/daPhoosa/MedianFilter
+	MedianFilter notchFiltered(40, 0);          // Filter the potentiometer values for proper notching
+#endif
 
 // Virtual loco
 VirtualLoco activeLoco;
-MedianFilter notchFiltered(40, 0);          // Filter the potentiometer values for proper notching
 unsigned long notchTime;                    // Timestamp of last transmisson of reference notch to WiThrottle server
 
 // Function buttons
 unsigned int btnFctCount = 0;               // Number of function buttons used in hardware setup
-unsigned int btnFctPin[] = { BTN_FCT_01, BTN_FCT_02, BTN_FCT_03, BTN_FCT_04, BTN_FCT_05, BTN_FCT_06, BTN_FCT_07, BTN_FCT_08, BTN_FCT_09 };
+unsigned int btnFctPin[] = { BTN_FCT_01, BTN_FCT_02, BTN_FCT_03, BTN_FCT_04, BTN_FCT_05, BTN_FCT_06, BTN_FCT_07, BTN_FCT_08, BTN_FCT_09, 0 }; // added '0' for safe limitation in "setup()"
                                             // Ordered list of input pins
 unsigned int btnFctFn[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
                                             // this will map the pin list to actual functions
@@ -101,10 +114,8 @@ void setup() {
   pinMode(BTN_FCT_SH, INPUT_PULLUP);
 
   pinMode(LED_STOP, OUTPUT);
-  #ifndef HL_DISP
-    pinMode(LED_FWD, OUTPUT);
-    pinMode(LED_REV, OUTPUT);
-  #endif
+  pinMode(LED_FWD, OUTPUT);
+  pinMode(LED_REV, OUTPUT);
 
   // WiThrottle will wakeup by pressing emergency stop button
   /*
@@ -113,15 +124,18 @@ void setup() {
    */
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_15, LOW);
 
+	#ifdef ROT_ENCODER
+		pinMode(ENC_CLK, INPUT);
+		pinMode(ENC_DT, INPUT);
+		pinMode(ENC_BTN, INPUT_PULLUP);
+
+		// WiThrottle initializes hardware
+		rotaryEncoder.begin();
+		rotaryEncoder.setup([] {rotaryEncoder.readEncoder_ISR();});
+
+	#endif
+
   #ifdef HL_DISP
-    pinMode(ENC_CLK, INPUT);
-    pinMode(ENC_DT, INPUT);
-    pinMode(ENC_BTN, INPUT_PULLUP);
-
-    // WiThrottle initializes hardware
-    rotaryEncoder.begin();
-    rotaryEncoder.setup([]{rotaryEncoder.readEncoder_ISR();});
-
     throttle.initDisplay();
   #endif
 
@@ -158,14 +172,20 @@ void loop() {
   throttle.checkConnectionToWiFi();
   throttle.checkConnectionToJMRI();
   btnStopLoop();
-  directionLoop();
+	#ifndef ROT_ENCODER
+		directionLoop();	// direction from switch
+	#endif
   ledLoop();
   btnFnLoop();
-  speedLoop();
-  throttle.sendHeartbeat();
+	#ifndef ROT_ENCODER
+		speedLoop();	// speed from Potentiometer
+	#endif
+	throttle.sendHeartbeat();
   throttle.listenToServer();
+	#ifdef ROT_ENCODER
+		encoderLoop();	// speed from rotary encoder
+	#endif
   #ifdef HL_DISP
-    encoderLoop();
     throttle.fastClockUpdate();
   #endif
 }
@@ -211,6 +231,21 @@ void btnStopLoop() {
       }
     }
   }
+/*
+  else if (digitalRead(BTN_FCT_SH) == LOW && !throttle.loco[0].getAcquired()) {
+    // this function is for debugging only
+    if(digitalRead(BTN_FCT_02) == LOW)
+      throttle.setLastAddress(602);
+    else if(digitalRead(BTN_FCT_04) == LOW)
+      throttle.setLastAddress(610);
+    else if(digitalRead(BTN_FCT_06) == LOW)
+      throttle.setLastAddress(636);
+
+    // Loop while emergency button is pressed to avoid chatter effect
+    while (digitalRead(BTN_STOP) == LOW) {
+    }
+  }
+*/
 }
 
 // Checks if a function button is pressed
@@ -234,6 +269,7 @@ void btnFnLoop() {
   }
 }
 
+#ifdef ROT_ENCODER
 // Checks if encoder is used
 void encoderLoop() {
   /* 
@@ -265,6 +301,7 @@ void encoderLoop() {
     Serial.println("Encoder value: " + String(encoderValue));
   } 
 }
+#endif
 
 // Checks if a loco is active
 void ledLoop() {
@@ -391,6 +428,7 @@ void directionLoop() {
   }
 }
 
+#ifndef ROT_ENCODER
 // Checks if speed of loco needs to change
 void speedLoop() {
   /*
@@ -441,3 +479,4 @@ void speedLoop() {
     throttle.loco[0].setNotch(notch);
   }
 }
+#endif
