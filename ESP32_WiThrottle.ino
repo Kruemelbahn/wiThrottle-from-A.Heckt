@@ -38,7 +38,7 @@
  */
 
 // original compiliert mit https://github.com/espressif/arduino-esp32@V1.0.6
-//   auch compilierbar mit https://github.com/espressif/arduino-esp32@V2.0.9 (04.05.2023)
+//     hier compiliert mit https://github.com/espressif/arduino-esp32@V2.0.9 (04.05.2023)
  
 #include "CrossFunc.h"
 #include "VirtualLoco.h"
@@ -231,21 +231,6 @@ void btnStopLoop() {
       }
     }
   }
-/*
-  else if (digitalRead(BTN_FCT_SH) == LOW && !throttle.loco[0].getAcquired()) {
-    // this function is for debugging only
-    if(digitalRead(BTN_FCT_02) == LOW)
-      throttle.setLastAddress(602);
-    else if(digitalRead(BTN_FCT_04) == LOW)
-      throttle.setLastAddress(610);
-    else if(digitalRead(BTN_FCT_06) == LOW)
-      throttle.setLastAddress(636);
-
-    // Loop while emergency button is pressed to avoid chatter effect
-    while (digitalRead(BTN_STOP) == LOW) {
-    }
-  }
-*/
 }
 
 // Checks if a function button is pressed

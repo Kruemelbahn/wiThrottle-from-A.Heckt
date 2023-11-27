@@ -7,7 +7,7 @@ Board verwendet: ESP32 ThingPlus V2.0 (Sparkfun)
 -> Platine v0.9.0 erstellt und verwendet
 
 Softwareanpassungen (wiFredI (AHeckt)):
-2020-08-15 = Softwareversion "0.90"
+2020-08-15
 Bugfixes:
 - GPIO-Beschreibung in CrossFunc.h korrigiert:
   "GPIO 21 --> Input/Output" und "GPIO 23 --> SDA"
@@ -31,8 +31,19 @@ Changes/Additional:
   - Möglichkeit zur Messung der LiPo-Spannung:
     + #define V_BATT: ist der Wert ungleich Null, wird die LiPo-Spanung überprüft
 
-2021-05-08 = Softwareversion "0.90"
+2020-05-08 = Softwareversion "0.90"
 Board: ESP32 Espressif Systems V1.0.6
 Bibliotheken installiert, zugehörige Links in ESP32_WiThrottle.ino und WiThrottle.cpp hinzugefügt
 Bugfixes:
 - Compiler-Warnings und Errors beseitigt
+
+2023-05-11 = Softwareversion "0.92"
+Board: ESP32 Espressif Systems V2.0.9
+- Pinbelegung in CrossFunc.h angepasst, um I²C-Schnittstelle nutzen zu können
+	#define BTN_FCT_02         14	  // war 23
+	#define LED_REV            32   // war 22
+	#define ENC_CLK            25   // war 34
+	#define ENC_DT             26   // war 39
+	#define OLED_SDA           23   // unverändert
+	#define OLED_SCL           22   // unverändert
+  Bemerkung "don't use when using WiFi!" geändert in "don't use when using EMAC!"

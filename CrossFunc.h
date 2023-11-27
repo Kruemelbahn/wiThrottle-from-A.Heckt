@@ -19,21 +19,21 @@
 // Software
 #define SW_RELEASE_YEAR  2020               // Software release year
 #define SW_LICENSE   "GPL v3"               // Software licence model
-#define SW_VERSION     "0.90"               // Software version
+#define SW_VERSION     "0.92"               // Software version
 
 
 // GPIO mapping
 
 /*
- * GPIO  0 --> ADC2 pin, don't use when using WiFi!
+ * GPIO  0 --> ADC2 pin, don't use when using EMAC!
  * GPIO  1 --> TX --> (Output)
- * GPIO  2 --> ADC2 pin, don't use when using WiFi!
+ * GPIO  2 --> ADC2 pin, don't use when using EMAC!
  * GPIO  3 --> RX --> must be HIGH during boot --> (Input)
- * GPIO  4 --> ADC2 pin, don't use when using WiFi!
+ * GPIO  4 --> ADC2 pin, don't use when using EMAC!
  * GPIO  5 --> Input/Output --> must be HIGH during boot (SCK)
- * GPIO 12 --> ADC2 pin, don't use when using WiFi!
- * GPIO 13 --> ADC2 pin, don't use when using WiFi!
- * GPIO 14 --> ADC2 pin, don't use when using WiFi!
+ * GPIO 12 --> ADC2 pin, don't use when using EMAC!
+ * GPIO 13 --> ADC2 pin, don't use when using EMAC!
+ * GPIO 14 --> ADC2 pin, don't use when using EMAC!
  * GPIO 15 --> Input/Output --> must be LOW during boot
  * GPIO 16 --> Input/Output
  * GPIO 17 --> Input/Output
@@ -42,9 +42,9 @@
  * GPIO 21 --> Input/Output
  * GPIO 22 --> SCL
  * GPIO 23 --> SDA
- * GPIO 25 --> ADC2 pin, don't use when using WiFi!
- * GPIO 26 --> ADC2 pin, don't use when using WiFi!
- * GPIO 27 --> ADC2 pin, don't use when using WiFi!
+ * GPIO 25 --> ADC2 pin, don't use when using EMAC!
+ * GPIO 26 --> ADC2 pin, don't use when using EMAC!
+ * GPIO 27 --> ADC2 pin, don't use when using EMAC!
  * GPIO 32 --> Input/Output
  * GPIO 33 --> Input/Output
  * GPIO 34 --> Input, no pull-up
@@ -65,7 +65,7 @@
 #define BTN_STOP           15               // Emergency stop button
 #define BTN_FCT_SH         17               // Shift button
 #define BTN_FCT_01         18               // Function button # 1 --> set to 0, if not used in hardware setup
-#define BTN_FCT_02         23               // Function button # 2 --> set to 0, if not used in hardware setup
+#define BTN_FCT_02         14               // Function button # 2 --> set to 0, if not used in hardware setup
 #define BTN_FCT_03         19               // Function button # 3 --> set to 0, if not used in hardware setup
 #define BTN_FCT_04         39               // Function button # 4 --> set to 0, if not used in hardware setup
 #define BTN_FCT_05         34               // Function button # 5 --> set to 0, if not used in hardware setup
@@ -86,11 +86,11 @@
 // LED
 #define LED_STOP            5               // Emergency stop LED
 #define LED_FWD            21               // Forward LED
-#define LED_REV            22               // Reverse LED
+#define LED_REV            32               // Reverse LED
 
 // Rotary encoder
-#define ENC_CLK            34               // Clock line from rotary encoder CLK
-#define ENC_DT             39               // Data line from rotary encoder DT
+#define ENC_CLK            25               // Clock line from rotary encoder CLK
+#define ENC_DT             26               // Data line from rotary encoder DT
 #define ENC_BTN            15               // Switch from rotary encoder SW
 #define ENC_PWR            -1               // VCC pin # (-1 = powered separately)
 
